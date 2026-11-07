@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* High-contrast dark mode root variables and typography */
+html.dark {
+  color-scheme: dark;
+  background-color: #121212;
+  color: #f5f5f4;
+}
+
+.dark body {
+  background-color: #121212;
+  color: #f5f5f4;
+}
+
+/* Ensure form controls, inputs, and textareas inherit readable text in dark mode */
+.dark input,
+.dark textarea,
+.dark select {
+  color-scheme: dark;
+}

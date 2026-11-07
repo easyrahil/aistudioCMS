@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hindu Date Converter · Vrat & Festival Finder</title>
+<style>
+  :root{
+    --bg:#fbf4e7;
+    --panel:#fffaf0;
+    --panel-2:#fff6e5;
+    --ink:#2c1810;
+    --muted:#7a6457;
+    --maroon:#7b1e2b;
+    --maroon-2:#a83243;
+    --saffron:#d97706;
+    --gold:#f3c677;
+    --line:#e6d5bb;
+    --ok:#1f7a4d;
+    --err:#b42318;
+    --shadow:0 18px 50px rgba(76, 32, 20, .12);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 10% 0%, rgba(217,119,6,.12), transparent 34%),
+      radial-gradient(circle at 95% 18%, rgba(123,30,43,.10), transparent 30%),
+      var(--bg);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    line-height:1.5;
+  }
+  [hidden]{display:none !important}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  .hero{
+    position:relative;
+    overflow:hidden;
+    padding:42px 0 82px;
+    color:#fff8ea;
+    background:linear-gradient(135deg,#57101b 0%,#7b1e2b 48%,#b23a1b 100%);
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    inset:-40% -10% auto;
+    height:520px;
+    background:
+      radial-gradient(circle at 20% 40%, rgba(255,209,132,.20), transparent 26%),
+      radial-gradient(circle at 76% 30%, rgba(255,179,71,.18), transparent 28%),
+      repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.04) 0 1px, transparent 1px 18px);
+    transform:rotate(-8deg);
+    pointer-events:none;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    left:-8%;
+    right:-8%;
+    bottom:-72px;
+    height:150px;
+    background:var(--bg);
+    border-radius:50%;
+    opacity:.95;
+  }
+  .hero .wrap{position:relative;z-index:1}
+  .soon{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 14px;
+    border:1px solid rgba(255,244,222,.38);
+    border-radius:999px;
+    background:rgba(255,255,255,.12);
+    color:#ffe9c4;
+    font-size:.78rem;
+    font-weight:800;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    backdrop-filter:blur(8px);
+  }
+  .soon::before{
+    content:"";
+    width:7px;height:7px;border-radius:50%;
+    background:#ffd27a;
+    box-shadow:0 0 0 5px rgba(255,210,122,.16);
+  }
+  h1{
+    margin:16px 0 8px;
+    max-width:840px;
+    font-family:Georgia,"Times New Roman",serif;
+    font-weight:700;
+    font-size:clamp(2.2rem,6vw,4.5rem);
+    line-height:1.02;
+    letter-spacing:-.03em;
+  }
+  .hero p{
+    max-width:780px;
+    margin:0;
+    color:#ffe6c8;
+    font-size:clamp(1rem,2vw,1.15rem);
+  }
+  main{
+    position:relative;
+    z-index:2;
+    margin-top:-48px;
+    padding-bottom:54px;
+  }
+  .panel{
+    background:rgba(255,250,240,.98);
+    border:1px solid var(--line);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    padding:22px;
+  }
+  .location{
+    display:grid;
+    grid-template-columns:minmax(240px,1.2fr) 1fr;
+    gap:18px;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  .tz-info{font-size:.92rem}
+  .tz-info strong{color:var(--maroon)}
+  .status{
+    grid-column:1/-1;
+    padding:10px 12px;
+    border-radius:10px;
+    background:#f6ead6;
+    color:#74543d;
+    font-size:.88rem;
+    border:1px solid #ecdac0;
+  }
+  .status.ok{background:#e9f8ef;color:#17633d;border-color:#bfe8cf}
+  .status.error{background:#fff0ef;color:#8f1d16;border-color:#f2c1bc}
+  .tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+    margin:18px 0;
+  }
+  .tab{
+    appearance:none;
+    border:1px solid #e2cfb1;
+    background:#f7ead3;
+    color:#5c3b2b;
+    border-radius:999px;
+    padding:10px 16px;
+    font:inherit;
+    font-weight:800;
+    font-size:.92rem;
+    cursor:pointer;
+    transition:transform .16s ease, background .16s ease, color .16s ease;
+  }
+  .tab:hover{transform:translateY(-1px);background:#f2dfbd}
+  .tab.active{background:var(--maroon);color:#fff8ec;border-color:var(--maroon)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+  .panel-head{margin-bottom:18px}
+  .panel-head h2{
+    margin:0 0 4px;
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:clamp(1.45rem,3vw,2rem);
+    color:var(--maroon);
+  }
+  .panel-head p{margin:0;color:var(--muted);max-width:820px}
+  .form-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+  }
+  .field label,.field-label{
+    display:block;
+    margin-bottom:6px;
+    font-size:.78rem;
+    font-weight:850;
+    color:#6b4a37;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  input,select{
+    width:100%;
+    border:1px solid #dcc7aa;
+    border-radius:11px;
+    background:#fffdf8;
+    color:var(--ink);
+    padding:11px 12px;
+    font:inherit;
+    outline:none;
+    transition:border-color .16s ease, box-shadow .16s ease;
+  }
+  input:focus,select:focus{
+    border-color:var(--saffron);
+    box-shadow:0 0 0 3px rgba(217,119,6,.16);
+  }
+  select:disabled,input:disabled{opacity:.6;cursor:not-allowed}
+  .field-note{min-height:1.2em;margin:6px 0 0;color:var(--muted);font-size:.78rem}
+  .checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:14px;
+    color:#634331;
+    font-size:.92rem;
+  }
+  .checkbox-row input{width:18px;height:18px;accent-color:var(--maroon)}
+  .check-group{
+    margin:16px 0 0;
+    padding:14px 16px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:var(--panel-2);
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 22px;
+  }
+  .check-group legend{
+    padding:0 6px;
+    font-size:.78rem;
+    font-weight:850;
+    color:#6b4a37;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .check-group label{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:.92rem;
+    cursor:pointer;
+  }
+  .check-group input{width:18px;height:18px;accent-color:var(--maroon)}
+  .actions{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:18px;
+  }
+  button.primary,button.secondary{
+    appearance:none;
+    border-radius:12px;
+    padding:12px 18px;
+    font:inherit;
+    font-weight:850;
+    cursor:pointer;
+    transition:transform .16s ease, opacity .16s ease, box-shadow .16s ease;
+  }
+  button.primary{
+    border:1px solid #671925;
+    color:#fff9ed;
+    background:linear-gradient(135deg,#7b1e2b,#a83243);
+    box-shadow:0 10px 24px rgba(123,30,43,.20);
+  }
+  button.secondary{
+    border:1px solid #c9a87e;
+    color:var(--maroon);
+    background:#fff9ed;
+  }
+  button.primary:hover:not(:disabled),button.secondary:hover:not(:disabled){transform:translateY(-1px)}
+  button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+  .hint{color:var(--muted);font-size:.84rem}
+  .error{
+    margin-top:16px;
+    padding:12px 14px;
+    border-radius:12px;
+    background:#fff0ef;
+    border:1px solid #f2c1bc;
+    color:#8f1d16;
+    font-size:.92rem;
+  }
+  .result{
+    margin-top:22px;
+    padding-top:20px;
+    border-top:1px dashed #ddc7a8;
+  }
+  .result-date{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:clamp(1.55rem,4vw,2.35rem);
+    line-height:1.1;
+    color:var(--maroon);
+  }
+  .result-sub{margin-top:6px;color:#6f5140;font-weight:700}
+  .details{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:11px;
+    margin:18px 0 0;
+  }
+  .detail{
+    padding:12px 14px;
+    border:1px solid #ead8bd;
+    border-radius:13px;
+    background:#fff7e9;
+  }
+  .detail dt{
+    margin:0;
+    font-size:.7rem;
+    font-weight:900;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:#8a5e43;
+  }
+  .detail dd{margin:4px 0 0;font-weight:650;color:#3b2419}
+  .note{
+    margin:14px 0 0;
+    padding:12px 14px;
+    background:#fdf0dc;
+    border-left:4px solid var(--saffron);
+    border-radius:9px;
+    color:#6b4b36;
+    font-size:.88rem;
+  }
+  .table-wrap{overflow-x:auto;margin-top:15px;border:1px solid var(--line);border-radius:14px}
+  table{width:100%;border-collapse:collapse;min-width:720px;background:#fffdf8}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid #eedfc9;vertical-align:top}
+  th{
+    background:#f8ecd8;
+    color:#6b4a37;
+    font-size:.72rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  tr:last-child td{border-bottom:0}
+  .event-name{font-weight:850;color:var(--maroon)}
+  .badge{
+    display:inline-block;
+    margin-left:7px;
+    padding:2px 7px;
+    border-radius:999px;
+    background:#f6dfb7;
+    color:#7e4d16;
+    font-size:.68rem;
+    font-weight:850;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+  }
+  .result-summary{margin-top:16px;color:#6b4a37;font-weight:700}
+  .empty{
+    margin-top:16px;
+    padding:20px;
+    border:1px dashed #d7be9b;
+    border-radius:14px;
+    color:var(--muted);
+    background:#fff9ee;
+    text-align:center;
+  }
+  .muted{color:var(--muted)}
+  footer{
+    padding:28px 20px 42px;
+    text-align:center;
+    color:#745b48;
+    font-size:.9rem;
+  }
+  footer a{color:var(--maroon);font-weight:800;text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  @media (max-width:800px){
+    .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .location{grid-template-columns:1fr}
+  }
+  @media (max-width:560px){
+    .hero{padding:32px 0 72px}
+    .panel{padding:17px;border-radius:17px}
+    .form-grid{grid-template-columns:1fr}
+    .tabs{gap:7px}
+    .tab{padding:9px 12px;font-size:.84rem}
+    .actions{align-items:stretch}
+    button.primary,button.secondary{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="soon">Coming Soon</span>
+    <h1>Hindu Date Converter</h1>
+    <p>Convert Shaka or Vikram Samvat dates to the English calendar, find Ekadashi, Purnima and Amavasya dates, and export observances to your calendar.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel location" aria-label="Location and engine status">
+    <div>
+      <label class="field-label" for="citySelect">City / country time zone</label>
+      <select id="citySelect"></select>
+    </div>
+    <div class="tz-info" id="tzInfo"></div>
+    <div class="status" id="engineStatus">Loading astronomy engine…</div>
+  </section>
+
+  <div class="tabs" role="tablist" aria-label="Converter tools">
+    <button class="tab active" id="tabBtn-convert" data-panel="panel-convert" role="tab" aria-selected="true" type="button">Hindu → English</button>
+    <button class="tab" id="tabBtn-festival" data-panel="panel-festival" role="tab" aria-selected="false" type="button">Festival finder</button>
+    <button class="tab" id="tabBtn-tithi" data-panel="panel-tithi" role="tab" aria-selected="false" type="button">Ekadashi & Purnima/Amavasya</button>
+  </div>
+
+  <!-- CONVERTER -->
+  <section class="panel tab-panel active" id="panel-convert" role="tabpanel" aria-labelledby="tabBtn-convert">
+    <div class="panel-head">
+      <h2>Convert a Hindu date</h2>
+      <p>Select the calendar system, month system, paksha and tithi. The result uses the selected city's local time zone.</p>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="calendarSystem">Calendar</label>
+        <select id="calendarSystem">
+          <option value="shaka">Shaka Samvat</option>
+          <option value="vikram-chaitra">Vikram Samvat — Chaitraadi (North)</option>
+          <option value="vikram-kartik">Vikram Samvat — Kartikadi (Gujarat)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="hinduYear">Hindu year</label>
+        <input id="hinduYear" type="number" min="1" max="9999" inputmode="numeric">
+      </div>
+
+      <div class="field">
+        <label for="monthSystem">Month system</label>
+        <select id="monthSystem">
+          <option value="amanta">Amanta</option>
+          <option value="purnimanta">Purnimanta</option>
+        </select>
+        <p class="field-note" id="monthSystemNote"></p>
+      </div>
+
+      <div class="field">
+        <label for="hinduMonth">Month</label>
+        <select id="hinduMonth"></select>
+      </div>
+
+      <div class="field">
+        <label for="paksha">Paksha</label>
+        <select id="paksha">
+          <option value="shukla">Shukla (waxing)</option>
+          <option value="krishna">Krishna (waning)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="tithi">Tithi</label>
+        <select id="tithi"></select>
+      </div>
+    </div>
+
+    <label class="checkbox-row">
+      <input type="checkbox" id="adhika">
+      <span>Adhika (extra) lunar month</span>
+    </label>
+
+    <div class="actions">
+      <button type="button" class="primary" id="convertBtn" data-requires-engine>Convert to English date</button>
+      <span class="hint">Lahiri ayanamsha, approximate · timings from astronomy-engine</span>
+    </div>
+
+    <div class="error" id="convertError" hidden></div>
+
+    <div class="result" id="convertResult" hidden>
+      <div class="result-date" id="convertDate"></div>
+      <div class="result-sub" id="convertSub"></div>
+      <dl class="details" id="convertDetails"></dl>
+      <p class="note" id="convertNote"></p>
+      <div class="actions">
+        <button type="button" class="secondary" id="convertIcs">Add to calendar (.ics)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FESTIVAL FINDER -->
+  <section class="panel tab-panel" id="panel-festival" role="tabpanel" aria-labelledby="tabBtn-festival">
+    <div class="panel-head">
+      <h2>Find a festival date</h2>
+      <p>Dates are computed with Amanta-based festival rules. Festivals in adhika months are skipped unless the local tradition says otherwise.</p>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="festivalSelect">Festival</label>
+        <select id="festivalSelect"></select>
+      </div>
+      <div class="field">
+        <label for="festivalYear">English year</label>
+        <input id="festivalYear" type="number" min="1" max="9999" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="primary" id="festivalBtn" data-requires-engine>Find festival date</button>
+      <span class="hint">Sunrise, sunset, moonrise and arunodaya approximations</span>
+    </div>
+
+    <div class="error" id="festivalError" hidden></div>
+
+    <div class="result" id="festivalResult" hidden>
+      <div class="result-date" id="festivalDate"></div>
+      <div class="result-sub" id="festivalSub"></div>
+      <dl class="details" id="festivalDetails"></dl>
+      <p class="note" id="festivalNote"></p>
+      <div class="actions">
+        <button type="button" class="secondary" id="festivalIcs">Add to calendar (.ics)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TITHI FINDER -->
+  <section class="panel tab-panel" id="panel-tithi" role="tabpanel" aria-labelledby="tabBtn-tithi">
+    <div class="panel-head">
+      <h2>Ekadashi, Purnima & Amavasya finder</h2>
+      <p>Choose any Gregorian month and year. The vrat date is the first local sunrise during the tithi. You can export all results as an .ics calendar file.</p>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="finderMonth">Gregorian month</label>
+        <select id="finderMonth"></select>
+      </div>
+      <div class="field">
+        <label for="finderYear">Year</label>
+        <input id="finderYear" type="number" min="1" max="9999" inputmode="numeric">
+      </div>
+    </div>
+
+    <fieldset class="check-group">
+      <legend>Show</legend>
+      <label><input type="checkbox" id="findEkadashi" checked> Ekadashi (both pakshas)</label>
+      <label><input type="checkbox" id="findPurnima" checked> Purnima</label>
+      <label><input type="checkbox" id="findAmavasya" checked> Amavasya</label>
+    </fieldset>
+
+    <div class="actions">
+      <button type="button" class="primary" id="findTithiBtn" data-requires-engine>Find dates</button>
+      <span class="hint">First sunrise during tithi is used for the vrat date</span>
+    </div>
+
+    <div class="error" id="tithiError" hidden></div>
+    <div id="tithiResults"></div>
+
+    <div class="actions">
+      <button type="button" class="secondary" id="tithiIcs" hidden>Download .ics</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Prototype · Astronomical timings are approximate. Verify with your local panchang before observing a vrat.</p>
+  <p>Vrat &amp; Festivals · <a href="mailto:Rahil.smart@gmail.com">Rahil.smart@gmail.com</a></p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  const DAY_MS = 86400000;
+  const HOUR_MS = 3600000;
+  const SYNODIC_MS = 29.530588853 * DAY_MS;
+
+  const MONTHS = [
+    "Chaitra", "Vaishakha", "Jyeshtha", "Ashadha",
+    "Shravana", "Bhadrapada", "Ashwin", "Kartik",
+    "Margashirsha", "Pausha", "Magha", "Phalguna"
+  ];
+
+  const MONTH_NAMES_EN = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const TITHI_NAMES = [
+    "Pratipada", "Dwitiya", "Tritiya", "Chaturthi",
+    "Panchami", "Shashthi", "Saptami", "Ashtami",
+    "Navami", "Dashami", "Ekadashi", "Dwadashi",
+    "Trayodashi", "Chaturdashi"
+  ];
+
+  const CALENDAR_LABELS = {
+    shaka: "Shaka Samvat",
+    "vikram-chaitra": "Vikram Samvat — Chaitraadi",
+    "vikram-kartik": "Vikram Samvat — Kartikadi (Gujarat)"
+  };
+
+  const RULE_LABELS = {
+    sunrise: "Tithi at local sunrise",
+    sunset: "Tithi at local sunset",
+    moonrise: "Tithi at local moonrise",
+    arunodaya: "Approx. arunodaya — 96 minutes before sunrise",
+    midnight: "Local midnight"
+  };
+
+  const FESTIVALS = [
+    { id: "diwali", name: "Diwali / Lakshmi Puja", month: 6, paksha: "krishna", tithi: 15, rule: "sunset",
+      note: "Lakshmi Puja is usually performed during Pradosh. Local puja muhurta may differ." },
+    { id: "govardhan", name: "Govardhan Puja / Annakut / Gujarati New Year", month: 7, paksha: "shukla", tithi: 1, rule: "sunrise",
+      note: "Kartik Shukla Pratipada. Gujarati New Year (Bestu Varas) falls on the same tithi." },
+    { id: "bhai-dooj", name: "Bhai Dooj", month: 7, paksha: "shukla", tithi: 2, rule: "sunrise",
+      note: "Regional names and tilak timing vary." },
+    { id: "chhath", name: "Chhath Puja", month: 7, paksha: "shukla", tithi: 6, rule: "arunodaya",
+      note: "Arunodaya is approximated as 96 minutes before sunrise. Local ghat timings vary." },
+    { id: "karva-chauth", name: "Karva Chauth", month: 6, paksha: "krishna", tithi: 4, rule: "moonrise",
+      note: "Moonrise is used. If moonrise is outside the tithi, sunset is shown as fallback." },
+    { id: "navratri-begins", name: "Sharad Navratri begins / Ghatasthapana", month: 6, paksha: "shukla", tithi: 1, rule: "sunrise",
+      note: "Ghatasthapana muhurta depends on local panchang." },
+    { id: "durga-ashtami", name: "Durga Ashtami", month: 6, paksha: "shukla", tithi: 8, rule: "sunrise",
+      note: "Some regions observe Ashtami/Navami with additional tithi rules." },
+    { id: "maha-navami", name: "Maha Navami", month: 6, paksha: "shukla", tithi: 9, rule: "sunrise",
+      note: "Sandhi and muhurta rules vary by region." },
+    { id: "dussehra", name: "Dussehra / Vijayadashami", month: 6, paksha: "shukla", tithi: 10, rule: "sunrise",
+      note: "Vijayadashami observance can depend on Dashami tithi at sunrise." },
+    { id: "sharad-purnima", name: "Sharad Purnima", month: 6, paksha: "shukla", tithi: 15, rule: "sunrise",
+      note: "Many traditions observe Purnima at moonrise or during the night." },
+    { id: "janmashtami", name: "Janmashtami", month: 4, paksha: "krishna", tithi: 8, rule: "sunrise",
+      note: "Many regions use midnight or Rohini nakshatra rules. This tool uses sunrise." },
+    { id: "raksha-bandhan", name: "Raksha Bandhan", month: 4, paksha: "shukla", tithi: 15, rule: "sunrise",
+      note: "Shravana Purnima. Local muhurta may differ." },
+    { id: "ganesh-chaturthi", name: "Ganesh Chaturthi", month: 5, paksha: "shukla", tithi: 4, rule: "sunrise",
+      note: "Mid-day Chaturthi rules are used in some regions." },
+    { id: "anant-chaturdashi", name: "Anant Chaturdashi", month: 5, paksha: "shukla", tithi: 14, rule: "sunrise",
+      note: "Chaturdashi tithi at sunrise is used as an approximation." },
+    { id: "pitru-amavasya", name: "Sarva Pitru Amavasya", month: 5, paksha: "krishna", tithi: 15, rule: "sunrise",
+      note: "Mahalaya Amavasya. Local pitru ritual timings vary." },
+    { id: "holi", name: "Holika Dahan / Holi", month: 11, paksha: "shukla", tithi: 15, rule: "sunset",
+      note: "Holika Dahan is on Phalguna Purnima; Dhulandi/Holi is usually the following day." },
+    { id: "maha-shivratri", name: "Maha Shivratri", month: 10, paksha: "krishna", tithi: 14, rule: "sunrise",
+      note: "Night-long observance rules vary. Check a local panchang." },
+    { id: "vasant-panchami", name: "Vasant Panchami", month: 10, paksha: "shukla", tithi: 5, rule: "sunrise",
+      note: "Saraswati Puja muhurta may differ locally." },
+    { id: "ram-navami", name: "Ram Navami", month: 0, paksha: "shukla", tithi: 9, rule: "sunrise",
+      note: "Madhyahna-based rules are used in many regions." },
+    { id: "gudi-padwa", name: "Gudi Padwa / Ugadi / Chaitra Navratri", month: 0, paksha: "shukla", tithi: 1, rule: "sunrise",
+      note: "Community names and new-year customs vary by region." },
+    { id: "hanuman-jayanti", name: "Hanuman Jayanti", month: 0, paksha: "shukla", tithi: 15, rule: "sunrise",
+      note: "Hanuman Jayanti is observed on different dates in some regions." },
+    { id: "akshaya-tritiya", name: "Akshaya Tritiya", month: 1, paksha: "shukla", tithi: 3, rule: "sunrise",
+      note: "Local muhurta may differ." },
+    { id: "guru-purnima", name: "Guru Purnima", month: 3, paksha: "shukla", tithi: 15, rule: "sunrise",
+      note: "Ashadha Purnima. Many traditions observe at moonrise or during the night." }
+  ];
+
+  const CITIES = [
+    { name: "New Delhi", region: "India", tz: "Asia/Kolkata", lat: 28.6139, lon: 77.2090 },
+    { name: "Mumbai", region: "India", tz: "Asia/Kolkata", lat: 19.0760, lon: 72.8777 },
+    { name: "Ahmedabad", region: "India", tz: "Asia/Kolkata", lat: 23.0225, lon: 72.5714 },
+    { name: "Surat", region: "India", tz: "Asia/Kolkata", lat: 21.1702, lon: 72.8311 },
+    { name: "Vadodara", region: "India", tz: "Asia/Kolkata", lat: 22.3072, lon: 73.1812 },
+    { name: "Rajkot", region: "India", tz: "Asia/Kolkata", lat: 22.3039, lon: 70.8022 },
+    { name: "Bengaluru", region: "India", tz: "Asia/Kolkata", lat: 12.9716, lon: 77.5946 },
+    { name: "Hyderabad", region: "India", tz: "Asia/Kolkata", lat: 17.3850, lon: 78.4867 },
+    { name: "Chennai", region: "India", tz: "Asia/Kolkata", lat: 13.0827, lon: 80.2707 },
+    { name: "Kolkata", region: "India", tz: "Asia/Kolkata", lat: 22.5726, lon: 88.3639 },
+    { name: "Pune", region: "India", tz: "Asia/Kolkata", lat: 18.5204, lon: 73.8567 },
+    { name: "Jaipur", region: "India", tz: "Asia/Kolkata", lat: 26.9124, lon: 75.7873 },
+    { name: "Lucknow", region: "India", tz: "Asia/Kolkata", lat: 26.8467, lon: 80.9462 },
+    { name: "Kanpur", region: "India", tz: "Asia/Kolkata", lat: 26.4499, lon: 80.3319 },
+    { name: "Nagpur", region: "India", tz: "Asia/Kolkata", lat: 21.1458, lon: 79.0882 },
+    { name: "Indore", region: "India", tz: "Asia/Kolkata", lat: 22.7196, lon: 75.8577 },
+    { name: "Bhopal", region: "India", tz: "Asia/Kolkata", lat: 23.2599, lon: 77.4126 },
+    { name: "Patna", region: "India", tz: "Asia/Kolkata", lat: 25.5941, lon: 85.1376 },
+    { name: "Varanasi", region: "India", tz: "Asia/Kolkata", lat: 25.3176, lon: 82.9739 },
+    { name: "Prayagraj", region: "India", tz: "Asia/Kolkata", lat: 25.4358, lon: 81.8463 },
+    { name: "Chandigarh", region: "India", tz: "Asia/Kolkata", lat: 30.7333, lon: 76.7794 },
+    { name: "Amritsar", region: "India", tz: "Asia/Kolkata", lat: 31.6340, lon: 74.8723 },
+    { name: "Guwahati", region: "India", tz: "Asia/Kolkata", lat: 26.1445, lon: 91.7362 },
+    { name: "Bhubaneswar", region: "India", tz: "Asia/Kolkata", lat: 20.2961, lon: 85.8245 },
+    { name: "Thiruvananthapuram", region: "India", tz: "Asia/Kolkata", lat: 8.5241, lon: 76.9366 },
+    { name: "Kochi", region: "India", tz: "Asia/Kolkata", lat: 9.9312, lon: 76.2673 },
+    { name: "Panaji", region: "India", tz: "Asia/Kolkata", lat: 15.4909, lon: 73.8278 },
+    { name: "Raipur", region: "India", tz: "Asia/Kolkata", lat: 21.2514, lon: 81.6296 },
+    { name: "Ranchi", region: "India", tz: "Asia/Kolkata", lat: 23.3441, lon: 85.3096 },
+    { name: "Srinagar", region: "India", tz: "Asia/Kolkata", lat: 34.0837, lon: 74.7973 },
+    { name: "Shimla", region: "India", tz: "Asia/Kolkata", lat: 31.1048, lon: 77.1734 },
+    { name: "Dehradun", region: "India", tz: "Asia/Kolkata", lat: 30.3165, lon: 78.0322 },
+    { name: "Gangtok", region: "India", tz: "Asia/Kolkata", lat: 27.3389, lon: 88.6065 },
+    { name: "Itanagar", region: "India", tz: "Asia/Kolkata", lat: 27.0844, lon: 93.6053 },
+    { name: "Aizawl", region: "India", tz: "Asia/Kolkata", lat: 23.7271, lon: 92.7176 },
+    { name: "Imphal", region: "India", tz: "Asia/Kolkata", lat: 24.8170, lon: 93.9368 },
+    { name: "Shillong", region: "India", tz: "Asia/Kolkata", lat: 25.5788, lon: 91.8933 },
+    { name: "Kohima", region: "India", tz: "Asia/Kolkata", lat: 25.6751, lon: 94.1086 },
+    { name: "Agartala", region: "India", tz: "Asia/Kolkata", lat: 23.8315, lon: 91.2868 },
+
+    { name: "Kathmandu", region: "Nepal & Sri Lanka", tz: "Asia/Kathmandu", lat: 27.7172, lon: 85.3240 },
+    { name: "Colombo", region: "Nepal & Sri Lanka", tz: "Asia/Colombo", lat: 6.9271, lon: 79.8612 },
+
+    { name: "New York", region: "North America", tz: "America/New_York", lat: 40.7128, lon: -74.0060 },
+    { name: "Jersey City", region: "North America", tz: "America/New_York", lat: 40.7178, lon: -74.0431 },
+    { name: "Edison", region: "North America", tz: "America/New_York", lat: 40.5187, lon: -74.4121 },
+    { name: "Chicago", region: "North America", tz: "America/Chicago", lat: 41.8781, lon: -87.6298 },
+    { name: "Houston", region: "North America", tz: "America/Chicago", lat: 29.7604, lon: -95.3698 },
+    { name: "Dallas", region: "North America", tz: "America/Chicago", lat: 32.7767, lon: -96.7970 },
+    { name: "Austin", region: "North America", tz: "America/Chicago", lat: 30.2672, lon: -97.7431 },
+    { name: "San Francisco", region: "North America", tz: "America/Los_Angeles", lat: 37.7749, lon: -122.4194 },
+    { name: "San Jose", region: "North America", tz: "America/Los_Angeles", lat: 37.3382, lon: -121.8863 },
+    { name: "Los Angeles", region: "North America", tz: "America/Los_Angeles", lat: 34.0522, lon: -118.2437 },
+    { name: "Seattle", region: "North America", tz: "America/Los_Angeles", lat: 47.6062, lon: -122.3321 },
+    { name: "Boston", region: "North America", tz: "America/New_York", lat: 42.3601, lon: -71.0589 },
+    { name: "Washington DC", region: "North America", tz: "America/New_York", lat: 38.9072, lon: -77.0369 },
+    { name: "Atlanta", region: "North America", tz: "America/New_York", lat: 33.7490, lon: -84.3880 },
+    { name: "Miami", region: "North America", tz: "America/New_York", lat: 25.7617, lon: -80.1918 },
+    { name: "Phoenix", region: "North America", tz: "America/Phoenix", lat: 33.4484, lon: -112.0740 },
+    { name: "Denver", region: "North America", tz: "America/Denver", lat: 39.7392, lon: -104.9903 },
+    { name: "Toronto", region: "North America", tz: "America/Toronto", lat: 43.6532, lon: -79.3832 },
+    { name: "Vancouver", region: "North America", tz: "America/Vancouver", lat: 49.2827, lon: -123.1207 },
+    { name: "Calgary", region: "North America", tz: "America/Edmonton", lat: 51.0447, lon: -114.0719 },
+    { name: "Montreal", region: "North America", tz: "America/Toronto", lat: 45.5019, lon: -73.5674 },
+
+    { name: "London", region: "United Kingdom & Europe", tz: "Europe/London", lat: 51.5074, lon: -0.1278 },
+    { name: "Birmingham", region: "United Kingdom & Europe", tz: "Europe/London", lat: 52.4862, lon: -1.8904 },
+    { name: "Leicester", region: "United Kingdom & Europe", tz: "Europe/London", lat: 52.6369, lon: -1.1398 },
+    { name: "Manchester", region: "United Kingdom & Europe", tz: "Europe/London", lat: 53.4808, lon: -2.2426 },
+    { name: "Paris", region: "United Kingdom & Europe", tz: "Europe/Paris", lat: 48.8566, lon: 2.3522 },
+    { name: "Amsterdam", region: "United Kingdom & Europe", tz: "Europe/Amsterdam", lat: 52.3676, lon: 4.9041 },
+    { name: "Frankfurt", region: "United Kingdom & Europe", tz: "Europe/Berlin", lat: 50.1109, lon: 8.6821 },
+    { name: "Zurich", region: "United Kingdom & Europe", tz: "Europe/Zurich", lat: 47.3769, lon: 8.5417 },
+
+    { name: "Dubai", region: "Middle East", tz: "Asia/Dubai", lat: 25.2048, lon: 55.2708 },
+    { name: "Abu Dhabi", region: "Middle East", tz: "Asia/Dubai", lat: 24.4539, lon: 54.3773 },
+    { name: "Sharjah", region: "Middle East", tz: "Asia/Dubai", lat: 25.3463, lon: 55.4209 },
+    { name: "Doha", region: "Middle East", tz: "Asia/Qatar", lat: 25.2854, lon: 51.5310 },
+    { name: "Riyadh", region: "Middle East", tz: "Asia/Riyadh", lat: 24.7136, lon: 46.6753 },
+    { name: "Muscat", region: "Middle East", tz: "Asia/Muscat", lat: 23.5880, lon: 58.3829 },
+    { name: "Kuwait City", region: "Middle East", tz: "Asia/Kuwait", lat: 29.3759, lon: 47.9774 },
+
+    { name: "Singapore", region: "Asia-Pacific", tz: "Asia/Singapore", lat: 1.3521, lon: 103.8198 },
+    { name: "Kuala Lumpur", region: "Asia-Pacific", tz: "Asia/Kuala_Lumpur", lat: 3.1390, lon: 101.6869 },
+    { name: "Hong Kong", region: "Asia-Pacific", tz: "Asia/Hong_Kong", lat: 22.3193, lon: 114.1694 },
+    { name: "Bangkok", region: "Asia-Pacific", tz: "Asia/Bangkok", lat: 13.7563, lon: 100.5018 },
+    { name: "Jakarta", region: "Asia-Pacific", tz: "Asia/Jakarta", lat: -6.2088, lon: 106.8456 },
+    { name: "Sydney", region: "Asia-Pacific", tz: "Australia/Sydney", lat: -33.8688, lon: 151.2093 },
+    { name: "Melbourne", region: "Asia-Pacific", tz: "Australia/Melbourne", lat: -37.8136, lon: 144.9631 },
+    { name: "Brisbane", region: "Asia-Pacific", tz: "Australia/Brisbane", lat: -27.4698, lon: 153.0251 },
+    { name: "Perth", region: "Asia-Pacific", tz: "Australia/Perth", lat: -31.9505, lon: 115.8605 },
+    { name: "Adelaide", region: "Asia-Pacific", tz: "Australia/Adelaide", lat: -34.9285, lon: 138.6007 },
+    { name: "Auckland", region: "Asia-Pacific", tz: "Pacific/Auckland", lat: -36.8485, lon: 174.7633 },
+    { name: "Suva", region: "Asia-Pacific", tz: "Pacific/Fiji", lat: -18.1416, lon: 178.4419 },
+
+    { name: "Johannesburg", region: "Africa & Indian Ocean", tz: "Africa/Johannesburg", lat: -26.2041, lon: 28.0473 },
+    { name: "Durban", region: "Africa & Indian Ocean", tz: "Africa/Johannesburg", lat: -29.8587, lon: 31.0218 },
+    { name: "Nairobi", region: "Africa & Indian Ocean", tz: "Africa/Nairobi", lat: -1.2921, lon: 36.8219 },
+    { name: "Port Louis", region: "Africa & Indian Ocean", tz: "Indian/Mauritius", lat: -20.1609, lon: 57.5012 },
+
+    { name: "Port of Spain", region: "Caribbean & South America", tz: "America/Port_of_Spain", lat: 10.6549, lon: -61.5019 },
+    { name: "Georgetown", region: "Caribbean & South America", tz: "America/Guyana", lat: 6.8013, lon: -58.1551 },
+    { name: "Paramaribo", region: "Caribbean & South America", tz: "America/Paramaribo", lat: 5.8520, lon: -55.2038 },
+    { name: "Bridgetown", region: "Caribbean & South America", tz: "America/Barbados", lat: 13.1132, lon: -59.5988 }
+  ];
+
+  const state = {
+    engineReady: false,
+    lastConvert: null,
+    lastFestival: null,
+    tithiResults: [],
+    tithiMeta: null
+  };
+
+  const $ = id => document.getElementById(id);
+
+  /* ================= UI wiring (unchanged behaviour) ================= */
+
+  function init() {
+    populateCities();
+    populateMonths();
+    populateFestivals();
+    populateFinderMonths();
+    populateTithiOptions();
+    setDefaultYears();
+    bindEvents();
+    updateCalendarUi();
+    updateTzInfo();
+
+    document.querySelectorAll("[data-requires-engine]").forEach(btn => { btn.disabled = true; });
+    loadAstronomyEngine();
+  }
+
+  function populateCities() {
+    const select = $("citySelect");
+    const groups = new Map();
+
+    CITIES.forEach((city, index) => {
+      if (!groups.has(city.region)) groups.set(city.region, []);
+      groups.get(city.region).push({ city, index });
+    });
+
+    select.innerHTML = "";
+    groups.forEach((items, region) => {
+      const group = document.createElement("optgroup");
+      group.label = region;
+      items.forEach(({ city, index }) => {
+        const opt = document.createElement("option");
+        opt.value = String(index);
+        opt.textContent = city.name;
+        group.appendChild(opt);
+      });
+      select.appendChild(group);
+    });
+
+    const resolved = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let match = CITIES.findIndex(c => c.tz === resolved);
+    if (match < 0) match = CITIES.findIndex(c => c.tz === "Asia/Kolkata");
+    select.value = String(match < 0 ? 0 : match);
+  }
+
+  function populateMonths() {
+    $("hinduMonth").innerHTML = MONTHS
+      .map((name, i) => `<option value="${i}">${escapeHtml(name)}</option>`)
+      .join("");
+  }
+
+  function populateFestivals() {
+    $("festivalSelect").innerHTML = FESTIVALS
+      .map((f, i) => `<option value="${i}">${escapeHtml(f.name)}</option>`)
+      .join("");
+  }
+
+  function populateFinderMonths() {
+    $("finderMonth").innerHTML = MONTH_NAMES_EN
+      .map((name, i) => `<option value="${i}">${escapeHtml(name)}</option>`)
+      .join("");
+    $("finderMonth").value = String(new Date().getMonth());
+  }
+
+  function populateTithiOptions() {
+    const select = $("tithi");
+    const current = select.value;
+    const paksha = $("paksha").value;
+    let html = "";
+
+    for (let i = 1; i <= 14; i++) {
+      html += `<option value="${i}">${i} — ${TITHI_NAMES[i - 1]}</option>`;
+    }
+    html += `<option value="15">15 — ${paksha === "shukla" ? "Purnima" : "Amavasya"}</option>`;
+    select.innerHTML = html;
+
+    if (current && select.querySelector(`option[value="${current}"]`)) {
+      select.value = current;
+    }
+  }
+
+  function setDefaultYears() {
+    const now = new Date();
+    $("festivalYear").value = String(now.getFullYear());
+    $("finderYear").value = String(now.getFullYear());
+    $("finderMonth").value = String(now.getMonth());
+    $("hinduYear").value = String(defaultHinduYear($("calendarSystem").value));
+  }
+
+  function defaultHinduYear(calendar, date = new Date()) {
+    const y = date.getFullYear();
+    if (calendar === "shaka") return y - 78;
+    if (calendar === "vikram-chaitra") return y + 57;
+    return y + (date.getMonth() >= 9 ? 57 : 56);
+  }
+
+  function bindEvents() {
+    $("calendarSystem").addEventListener("change", () => {
+      $("hinduYear").value = String(defaultHinduYear($("calendarSystem").value));
+      updateCalendarUi();
+    });
+    $("paksha").addEventListener("change", populateTithiOptions);
+    $("citySelect").addEventListener("change", updateTzInfo);
+
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => {
+          const active = t === tab;
+          t.classList.toggle("active", active);
+          t.setAttribute("aria-selected", String(active));
+        });
+        document.querySelectorAll(".tab-panel").forEach(panel => {
+          panel.classList.toggle("active", panel.id === tab.dataset.panel);
+        });
+      });
+    });
+
+    $("convertBtn").addEventListener("click", handleConvert);
+    $("festivalBtn").addEventListener("click", handleFestival);
+    $("findTithiBtn").addEventListener("click", handleFindTithi);
+
+    $("convertIcs").addEventListener("click", downloadConvertIcs);
+    $("festivalIcs").addEventListener("click", downloadFestivalIcs);
+    $("tithiIcs").addEventListener("click", downloadTithiIcs);
+  }
+
+  function updateCalendarUi() {
+    const isKartikadi = $("calendarSystem").value === "vikram-kartik";
+    $("monthSystem").disabled = isKartikadi;
+    if (isKartikadi) $("monthSystem").value = "amanta";
+
+    $("monthSystemNote").textContent = isKartikadi
+      ? "Gujarat / Kartikadi Vikram uses Amanta month naming. Purnimanta is disabled."
+      : "";
+  }
+
+  function updateTzInfo() {
+    const city = getSelectedCity();
+    $("tzInfo").innerHTML = `
+      <div><strong>${escapeHtml(city.name)}</strong></div>
+      <div class="muted">${escapeHtml(city.tz)} · ${city.lat.toFixed(2)}°, ${city.lon.toFixed(2)}°</div>
+      <div class="muted">All times are displayed in this IANA time zone.</div>
+    `;
+  }
+
+  function getSelectedCity() {
+    const index = Number($("citySelect").value);
+    return CITIES[index] || CITIES[0];
+  }
+
+  async function loadAstronomyEngine() {
+    const status = $("engineStatus");
+    status.className = "status";
+    status.textContent = "Loading astronomy engine…";
+
+    if (window.Astronomy) { onEngineReady(); return; }
+
+    const urls = [
+      "https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js",
+      "https://unpkg.com/astronomy-engine@2.1.19/astronomy.browser.min.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/astronomy-engine/2.1.19/astronomy.browser.min.js"
+    ];
+
+    for (const url of urls) {
+      try {
+        await loadScript(url);
+        if (window.Astronomy) { onEngineReady(); return; }
+      } catch (error) {
+        console.warn("Astronomy engine load failed:", url, error);
+      }
+    }
+
+    status.className = "status error";
+    status.textContent = "Could not load astronomy-engine. Check your internet connection and reload this page.";
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      const timer = setTimeout(() => { script.remove(); reject(new Error("Timed out")); }, 15000);
+      script.src = src;
+      script.async = true;
+      script.onload = () => { clearTimeout(timer); resolve(); };
+      script.onerror = () => { clearTimeout(timer); script.remove(); reject(new Error("Script error")); };
+      document.head.appendChild(script);
+    });
+  }
+
+  function onEngineReady() {
+    state.engineReady = true;
+    const status = $("engineStatus");
+    status.className = "status ok";
+    status.textContent = "Astronomy engine ready. Calculations use the selected city's time zone.";
+    document.querySelectorAll("[data-requires-engine]").forEach(btn => { btn.disabled = false; });
+  }
+
+  /* ================= Astronomy primitives ================= */
+
+  function norm360(value) {
+    value %= 360;
+    return value < 0 ? value + 360 : value;
+  }
+
+  function signedAngleDiff(a, b) {
+    let diff = (a - b) % 360;
+    if (diff >= 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    return diff;
+  }
+
+  function sunLon(date) {
+    if (typeof Astronomy.SunPosition === "function") {
+      const pos = Astronomy.SunPosition(date);
+      if (pos && Number.isFinite(pos.elon)) return norm360(pos.elon);
+    }
+    const vec = Astronomy.GeoVector(Astronomy.Body.Sun, date, true);
+    return norm360(Astronomy.Ecliptic(vec).elon);
+  }
+
+  function moonLon(date) {
+    if (typeof Astronomy.EclipticGeoMoon === "function") {
+      const pos = Astronomy.EclipticGeoMoon(date);
+      if (pos && Number.isFinite(pos.lon)) return norm360(pos.lon);
+    }
+    const vec = Astronomy.GeoVector(Astronomy.Body.Moon, date, true);
+    return norm360(Astronomy.Ecliptic(vec).elon);
+  }
+
+  function elongation(date) {
+    return norm360(moonLon(date) - sunLon(date));
+  }
+
+  function tithiIndexAt(date) {
+    return Math.floor(elongation(date) / 12) % 30;
+  }
+
+  function lahiriAyanamsha(date) {
+    const days = (date.getTime() - Date.UTC(2000, 0, 1, 12)) / DAY_MS;
+    return 23.85708 + days * 3.8245e-5;
+  }
+
+  function siderealSunSignAt(date) {
+    return Math.floor(norm360(sunLon(date) - lahiriAyanamsha(date)) / 30);
+  }
+
+  function bisectCrossing(target, loMs, hiMs) {
+    let lo = loMs;
+    let hi = hiMs;
+
+    for (let i = 0; i < 42; i++) {
+      const mid = (lo + hi) / 2;
+      const diff = signedAngleDiff(elongation(new Date(mid)), target);
+      if (diff < 0) lo = mid;
+      else hi = mid;
+    }
+
+    return new Date((lo + hi) / 2);
+  }
+
+  // Finds the crossing of `target` walking forward (or backward) from `fromDate`.
+  function findCrossing(target, fromDate, direction, maxHours = 80) {
+    const dir = direction === "forward" ? 1 : -1;
+    let tPrev = fromDate.getTime();
+    let fPrev = signedAngleDiff(elongation(new Date(tPrev)), target);
+
+    for (let i = 1; i <= maxHours; i++) {
+      const t = fromDate.getTime() + dir * i * HOUR_MS;
+      const f = signedAngleDiff(elongation(new Date(t)), target);
+
+      if (dir > 0) {
+        if (fPrev < 0 && f >= 0) return bisectCrossing(target, tPrev, t);
+      } else {
+        if (f < 0 && fPrev >= 0) return bisectCrossing(target, t, tPrev);
+      }
+
+      tPrev = t;
+      fPrev = f;
+    }
+
+    return null;
+  }
+
+  // New moon at or before `date`.
+  function findNewMoonBefore(date) {
+    const step = 3 * HOUR_MS;
+    const base = date.getTime();
+    let tLater = base;
+    let fLater = signedAngleDiff(elongation(new Date(tLater)), 0);
+
+    if (Math.abs(fLater) < 1e-6) return new Date(tLater);
+
+    const maxSteps = Math.ceil((32 * DAY_MS) / step);
+
+    for (let i = 1; i <= maxSteps; i++) {
+      const tEarlier = base - i * step;
+      const fEarlier = signedAngleDiff(elongation(new Date(tEarlier)), 0);
+
+      if (fEarlier < 0 && fLater >= 0) return bisectCrossing(0, tEarlier, tLater);
+
+      tLater = tEarlier;
+      fLater = fEarlier;
+    }
+
+    return null;
+  }
+
+  // New moon after `date`.
+  function findNewMoonAfter(date) {
+    const step = 3 * HOUR_MS;
+    const base = date.getTime();
+    let tEarlier = base;
+    let fEarlier = signedAngleDiff(elongation(new Date(tEarlier)), 0);
+    const maxSteps = Math.ceil((32 * DAY_MS) / step);
+
+    for (let i = 1; i <= maxSteps; i++) {
+      const tLater = base + i * step;
+      const fLater = signedAngleDiff(elongation(new Date(tLater)), 0);
+
+      if (fEarlier < 0 && fLater >= 0) return bisectCrossing(0, tEarlier, tLater);
+
+      tEarlier = tLater;
+      fEarlier = fLater;
+    }
+
+    return null;
+  }
+
+  function getObserver(city) {
+    return new Astronomy.Observer(city.lat, city.lon, 0);
+  }
+
+  function eventOnDay(body, rising, y, m, d, city) {
+    const dayStart = localMidnight(y, m, d, city.tz);
+    const limit = new Date(dayStart.getTime() + 26 * HOUR_MS);
+    const direction = rising
+      ? (Astronomy.Direction ? Astronomy.Direction.Rise : 1)
+      : (Astronomy.Direction ? Astronomy.Direction.Set : -1);
+
+    try {
+      const event = Astronomy.SearchRiseSet(body, getObserver(city), direction, dayStart, 1.2);
+      if (!event || !event.date) return null;
+      if (event.date < dayStart || event.date >= limit) return null;
+      return event.date;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function sunriseOn(y, m, d, city) {
+    return eventOnDay(Astronomy.Body.Sun, true, y, m, d, city);
+  }
+
+  // Amanta month for the lunar month containing `date`, dated from the
+  // new moon at or before it.
+  function amantaMonthForDate(date, tz) {
+    const newMoon = findNewMoonBefore(new Date(date.getTime() + 60000));
+    if (!newMoon) return null;
+
+    const nextNewMoon = findNewMoonAfter(new Date(newMoon.getTime() + 12 * HOUR_MS));
+    if (!nextNewMoon) return null;
+
+    const startSign = siderealSunSignAt(newMoon);
+    const nextSign = siderealSunSignAt(nextNewMoon);
+
+    return {
+      monthStart: newMoon,
+      nextNewMoon,
+      startSign,
+      amantaMonth: (startSign + 1) % 12,
+      adhika: startSign === nextSign
+    };
+  }
+
+  function lunarYearInfo(monthInfo, tz) {
+    const start = zonedParts(monthInfo.monthStart, tz);
+
+    let chaitraYear;
+    if (monthInfo.amantaMonth >= 9) {
+      chaitraYear = start.month === 11 ? start.year : start.year - 1;
+    } else {
+      chaitraYear = start.year;
+    }
+
+    const vikramChaitra = chaitraYear + 57;
+    const kartikadi = vikramChaitra - (monthInfo.amantaMonth < 7 ? 1 : 0);
+
+    return {
+      chaitraYear,
+      shaka: chaitraYear - 78,
+      vikramChaitra,
+      kartikadi
+    };
+  }
+
+  // Start and end of the tithi that is running at `date`.
+  function tithiSpan(date) {
+    const index = tithiIndexAt(date);
+    const startTarget = (index * 12) % 360;
+    const endTarget = ((index + 1) * 12) % 360;
+
+    return {
+      index,
+      start: findCrossing(startTarget, new Date(date.getTime() - 1000), "backward", 80),
+      end: findCrossing(endTarget, new Date(date.getTime() + 1000), "forward", 80)
+    };
+  }
+
+  /* ================= Time zone + formatting helpers ================= */
+
+  function tzOffsetMs(date, timeZone) {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    const parts = {};
+    dtf.formatToParts(date).forEach(part => {
+      if (part.type !== "literal") parts[part.type] = part.value;
+    });
+
+    let hour = Number(parts.hour);
+    if (hour === 24) hour = 0;
+
+    const asUtc = Date.UTC(
+      Number(parts.year),
+      Number(parts.month) - 1,
+      Number(parts.day),
+      hour,
+      Number(parts.minute),
+      Number(parts.second)
+    );
+
+    return asUtc - date.getTime();
+  }
+
+  function localMidnight(y, m, d, timeZone) {
+    const partsAsUtc = Date.UTC(y, m, d, 0, 0, 0);
+    let offset = tzOffsetMs(new Date(partsAsUtc), timeZone);
+    let instant = partsAsUtc - offset;
+    offset = tzOffsetMs(new Date(instant), timeZone);
+    instant = partsAsUtc - offset;
+    return new Date(instant);
+  }
+
+  function zonedParts(date, timeZone) {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23"
+    });
+
+    const parts = {};
+    formatter.formatToParts(date).forEach(part => {
+      if (part.type !== "literal") parts[part.type] = part.value;
+    });
+
+    return {
+      year: Number(parts.year),
+      month: Number(parts.month) - 1,
+      day: Number(parts.day),
+      hour: Number(parts.hour),
+      minute: Number(parts.minute),
+      second: Number(parts.second)
+    };
+  }
+
+  function formatFullDate(date, timeZone) {
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).format(date);
+  }
+
+  function formatDateTime(date, timeZone) {
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      dateStyle: "medium",
+      timeStyle: "short"
+    }).format(date);
+  }
+
+  function formatTime(date, timeZone) {
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    }).format(date);
+  }
+
+  function dateKey(date, timeZone) {
+    const p = zonedParts(date, timeZone);
+    return `${p.year}${pad2(p.month + 1)}${pad2(p.day)}`;
+  }
+
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, character => {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character];
+    });
+  }
+
+  function detail(label, value) {
+    return `<div class="detail"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`;
+  }
+
+  function tick() {
+    return new Promise(resolve => setTimeout(resolve, 40));
+  }
+
+  function showError(id, message) {
+    const element = $(id);
+    element.hidden = false;
+    element.textContent = message;
+  }
+
+  function clearError(id) {
+    const element = $(id);
+    element.hidden = true;
+    element.textContent = "";
+  }
+
+  /* ================= Tithi naming ================= */
+
+  function tithiIndexFor(paksha, tithi) {
+    return paksha === "shukla" ? tithi - 1 : 15 + tithi - 1;
+  }
+
+  function festivalTithiIndex(festival) {
+    return tithiIndexFor(festival.paksha, festival.tithi);
+  }
+
+  function tithiShortName(tithi, paksha) {
+    if (tithi === 15) return paksha === "shukla" ? "Purnima" : "Amavasya";
+    return TITHI_NAMES[tithi - 1];
+  }
+
+  function tithiLabel(index) {
+    const paksha = index < 15 ? "Shukla" : "Krishna";
+    const n = index % 15;
+    if (n === 14) return `${paksha} ${paksha === "Shukla" ? "Purnima" : "Amavasya"}`;
+    return `${paksha} ${TITHI_NAMES[n]}`;
+  }
+
+  /* ================= Hindu → English conversion ================= */
+
+  function readConvertInput() {
+    const calendar = $("calendarSystem").value;
+    return {
+      calendar,
+      year: Number($("hinduYear").value),
+      monthSystem: calendar === "vikram-kartik" ? "amanta" : $("monthSystem").value,
+      month: Number($("hinduMonth").value),
+      paksha: $("paksha").value,
+      tithi: Number($("tithi").value),
+      adhika: $("adhika").checked
+    };
+  }
+
+  function estimateGregorianDate(input) {
+    if (input.calendar === "vikram-kartik") {
+      const gregYear = input.year - 56;
+      const offsetMonths = (input.month - 7 + 12) % 12;
+      return new Date(Date.UTC(gregYear, 9, 20) + offsetMonths * SYNODIC_MS);
+    }
+
+    const gregYear = input.calendar === "shaka" ? input.year + 78 : input.year - 57;
+    return new Date(Date.UTC(gregYear, 2, 25) + input.month * SYNODIC_MS);
+  }
+
+  function findConverterCandidates(input, city) {
+    const targetIndex = tithiIndexFor(input.paksha, input.tithi);
+    const targetAmanta = (input.monthSystem === "purnimanta" && input.paksha === "krishna")
+      ? (input.month + 11) % 12
+      : input.month;
+
+    const estimate = estimateGregorianDate(input);
+    const fromMs = estimate.getTime() - 130 * DAY_MS;
+    const toMs = estimate.getTime() + 130 * DAY_MS;
+    const candidates = [];
+    const seen = new Set();
+
+    for (let ms = fromMs; ms <= toMs; ms += DAY_MS) {
+      const g = new Date(ms);
+      const y = g.getUTCFullYear();
+      const m = g.getUTCMonth();
+      const d = g.getUTCDate();
+
+      const sunrise = sunriseOn(y, m, d, city);
+      if (!sunrise) continue;
+      if (tithiIndexAt(sunrise) !== targetIndex) continue;
+
+      const key = dateKey(sunrise, city.tz);
+      if (seen.has(key)) continue;
+
+      const monthInfo = amantaMonthForDate(sunrise, city.tz);
+      if (!monthInfo) continue;
+      if (monthInfo.adhika !== input.adhika) continue;
+      if (monthInfo.amantaMonth !== targetAmanta) continue;
+
+      const yearInfo = lunarYearInfo(monthInfo, city.tz);
+      const resolvedYear = input.calendar === "shaka"
+        ? yearInfo.shaka
+        : input.calendar === "vikram-chaitra"
+          ? yearInfo.vikramChaitra
+          : yearInfo.kartikadi;
+
+      if (resolvedYear !== input.year) continue;
+
+      seen.add(key);
+      candidates.push({
+        date: sunrise,
+        sunrise,
+        monthInfo,
+        yearInfo,
+        span: tithiSpan(sunrise)
+      });
+    }
+
+    candidates.sort((a, b) =>
+      Math.abs(a.date - estimate) - Math.abs(b.date - estimate)
+    );
+
+    return candidates;
+  }
+
+  async function handleConvert() {
+    clearError("convertError");
+    $("convertResult").hidden = true;
+
+    if (!state.engineReady) {
+      showError("convertError", "The astronomy engine is still loading. Please wait a moment.");
+      return;
+    }
+
+    const input = readConvertInput();
+    if (!Number.isFinite(input.year) || input.year < 1 || input.year > 9999) {
+      showError("convertError", "Enter a valid Hindu year between 1 and 9999.");
+      return;
+    }
+
+    const button = $("convertBtn");
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = "Calculating…";
+    await tick();
+
+    try {
+      const city = getSelectedCity();
+      const candidates = findConverterCandidates(input, city);
+
+      if (!candidates.length) {
+        throw new Error(
+          "No matching date was found for that combination. Try the other month system, check the year, or tick/untick Adhika month. Regional panchang rules can differ."
+        );
+      }
+
+      state.lastConvert = { input, candidate: candidates[0], city };
+      renderConvertResult(input, candidates[0], city, candidates.length);
+    } catch (error) {
+      console.error(error);
+      showError("convertError", error.message || String(error));
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  function renderConvertResult(input, candidate, city, count) {
+    const tz = city.tz;
+    const span = candidate.span;
+    const pakshaName = input.paksha === "shukla" ? "Shukla" : "Krishna";
+    const tithiName = tithiShortName(input.tithi, input.paksha);
+    const monthSystemName = input.monthSystem === "amanta" ? "Amanta" : "Purnimanta";
+    const monthInfo = candidate.monthInfo;
+
+    $("convertDate").textContent = formatFullDate(candidate.date, tz);
+    $("convertSub").textContent =
+      `${CALENDAR_LABELS[input.calendar]} ${input.year} · ${monthSystemName} · ` +
+      `${MONTHS[input.month]} ${pakshaName} ${tithiName}` +
+      `${input.adhika ? " · Adhika" : ""}`;
+
+    $("convertDetails").innerHTML = [
+      detail("Vrat / observance date", formatFullDate(candidate.date, tz)),
+      detail("Tithi begins", span && span.start ? formatDateTime(span.start, tz) : "—"),
+      detail("Tithi ends", span && span.end ? formatDateTime(span.end, tz) : "—"),
+      detail("Sunrise that day", formatDateTime(candidate.sunrise, tz)),
+      detail(
+        "Lunar month (Amanta)",
+        `${MONTHS[monthInfo.amantaMonth]}${monthInfo.adhika ? " (Adhika)" : ""}`
+      ),
+      detail(
+        "Purnimanta equivalent",
+        MONTHS[(monthInfo.amantaMonth + (input.paksha === "krishna" ? 1 : 0)) % 12]
+      ),
+      detail(
+        "Year labels",
+        `Shaka ${candidate.yearInfo.shaka} · Vikram ${candidate.yearInfo.vikramChaitra} · Kartikadi ${candidate.yearInfo.kartikadi}`
+      ),
+      detail("Time zone", `${city.name} · ${tz}`),
+      detail("Lahiri ayanamsha", `${lahiriAyanamsha(candidate.sunrise).toFixed(4)}° (approx.)`)
+    ].join("");
+
+    $("convertNote").textContent =
+      `${count > 1 ? "More than one match was found; the one nearest the estimate is shown. " : ""}` +
+      "The date shown is the day on which the tithi is present at sunrise (the usual vrat rule). " +
+      "Adhika-month and month-system conventions vary by tradition; verify with a local panchang.";
+
+    $("convertResult").hidden = false;
+  }
+
+  /* ================= Festival finder ================= */
+
+  function referenceMomentForRule(rule, city, y, m, d, sunrise) {
+    if (rule === "sunrise") return sunrise;
+    if (rule === "arunodaya") return new Date(sunrise.getTime() - 96 * 60000);
+    if (rule === "sunset") {
+      return eventOnDay(Astronomy.Body.Sun, false, y, m, d, city) ||
+        new Date(sunrise.getTime() + 12 * HOUR_MS);
+    }
+    if (rule === "moonrise") {
+      return eventOnDay(Astronomy.Body.Moon, true, y, m, d, city) ||
+        eventOnDay(Astronomy.Body.Sun, false, y, m, d, city) ||
+        sunrise;
+    }
+    return sunrise;
+  }
+
+  function daysInGregorianYear(year) {
+    return ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) ? 366 : 365;
+  }
+
+  function findFestivalForYear(festival, year, city) {
+    const targetIndex = festivalTithiIndex(festival);
+    const total = daysInGregorianYear(year);
+    const candidates = [];
+
+    for (let i = 0; i < total; i++) {
+      const date = new Date(Date.UTC(year, 0, 1 + i));
+      const y = date.getUTCFullYear();
+      const m = date.getUTCMonth();
+      const d = date.getUTCDate();
+      if (y !== year) break;
+
+      const sunrise = sunriseOn(y, m, d, city);
+      if (!sunrise) continue;
+
+      const reference = referenceMomentForRule(festival.rule, city, y, m, d, sunrise);
+      if (!reference) continue;
+      if (tithiIndexAt(reference) !== targetIndex) continue;
+
+      const monthInfo = amantaMonthForDate(sunrise, city.tz);
+      if (!monthInfo) continue;
+
+      candidates.push({ date: reference, sunrise, monthInfo });
+
+      if (monthInfo.adhika) continue;
+      if (monthInfo.amantaMonth !== festival.month) continue;
+
+      return {
+        match: {
+          festival,
+          year,
+          city,
+          observance: reference,
+          sunrise,
+          monthInfo,
+          span: tithiSpan(reference)
+        },
+        candidates
+      };
+    }
+
+    return { match: null, candidates };
+  }
+
+  async function handleFestival() {
+    clearError("festivalError");
+    $("festivalResult").hidden = true;
+
+    if (!state.engineReady) {
+      showError("festivalError", "The astronomy engine is still loading. Please wait a moment.");
+      return;
+    }
+
+    const festival = FESTIVALS[Number($("festivalSelect").value)];
+    const year = Number($("festivalYear").value);
+
+    if (!Number.isFinite(year) || year < 1 || year > 9999) {
+      showError("festivalError", "Enter a valid English year between 1 and 9999.");
+      return;
+    }
+
+    const button = $("festivalBtn");
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = "Finding…";
+    await tick();
+
+    try {
+      const city = getSelectedCity();
+      const { match, candidates } = findFestivalForYear(festival, year, city);
+
+      if (!match) {
+        const label = tithiLabel(festivalTithiIndex(festival));
+        const list = candidates.length
+          ? candidates.map(c =>
+              `${formatFullDate(c.date, city.tz)} — ${MONTHS[c.monthInfo.amantaMonth]}` +
+              `${c.monthInfo.adhika ? " (Adhika)" : ""}`
+            ).join("; ")
+          : `no day in ${year} had this tithi at ${RULE_LABELS[festival.rule] || festival.rule}.`;
+
+        throw new Error(
+          `No ${label} fell in ${MONTHS[festival.month]} for ${year} in ${city.name}. ` +
+          `Tithi occurrences found: ${list}. Try the other month system or check a local panchang.`
+        );
+      }
+
+      state.lastFestival = match;
+      renderFestivalResult(match);
+    } catch (error) {
+      console.error(error);
+      showError("festivalError", error.message || String(error));
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  function renderFestivalResult(result) {
+    const { festival, city, observance, sunrise, monthInfo, span } = result;
+    const tz = city.tz;
+
+    $("festivalDate").textContent = formatFullDate(observance, tz);
+    $("festivalSub").textContent = `${festival.name} · ${result.year} · ${city.name}`;
+
+    $("festivalDetails").innerHTML = [
+      detail("Rule used", RULE_LABELS[festival.rule] || festival.rule),
+      detail("Tithi", tithiLabel(festivalTithiIndex(festival))),
+      detail("Tithi begins", span && span.start ? formatDateTime(span.start, tz) : "—"),
+      detail("Tithi ends", span && span.end ? formatDateTime(span.end, tz) : "—"),
+      detail("Sunrise that day", formatDateTime(sunrise, tz)),
+      detail(
+        "Lunar month (Amanta)",
+        `${MONTHS[monthInfo.amantaMonth]}${monthInfo.adhika ? " (Adhika)" : ""}`
+      ),
+      detail("Time zone", `${city.name} · ${tz}`)
+    ].join("");
+
+    $("festivalNote").textContent =
+      `${festival.note || "Regional rules may vary."} ` +
+      "The .ics export creates an all-day reminder; confirm the exact puja muhurta locally.";
+
+    $("festivalResult").hidden = false;
+  }
+
+  /* ================= Ekadashi / Purnima / Amavasya finder ================= */
+
+  function findTithiEvents(year, month, options, city) {
+    const total = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    const wanted = new Map();
+
+    if (options.ekadashi) {
+      wanted.set(10, "Shukla Ekadashi");
+      wanted.set(25, "Krishna Ekadashi");
+    }
+    if (options.purnima) wanted.set(14, "Purnima");
+    if (options.amavasya) wanted.set(29, "Amavasya");
+
+    const results = [];
+    let previousIndex = -1;
+    let previousResult = null;
+
+    for (let d = 1; d <= total; d++) {
+      const sunrise = sunriseOn(year, month, d, city);
+      if (!sunrise) { previousIndex = -1; previousResult = null; continue; }
+
+      const index = tithiIndexAt(sunrise);
+
+      if (index === previousIndex) {
+        if (previousResult) previousResult.spansMultipleSunrises = true;
+        continue;
+      }
+
+      previousIndex = index;
+
+      if (!wanted.has(index)) { previousResult = null; continue; }
+
+      const span = tithiSpan(sunrise);
+      const result = {
+        label: wanted.get(index),
+        index,
+        observance: sunrise,
+        start: span.start,
+        end: span.end,
+        spansMultipleSunrises: false,
+        noSunrise: false,
+        city,
+        tz: city.tz
+      };
+
+      results.push(result);
+      previousResult = result;
+    }
+
+    return results;
+  }
+
+  async function handleFindTithi() {
+    clearError("tithiError");
+    $("tithiResults").innerHTML = "";
+    $("tithiIcs").hidden = true;
+
+    if (!state.engineReady) {
+      showError("tithiError", "The astronomy engine is still loading. Please wait a moment.");
+      return;
+    }
+
+    const year = Number($("finderYear").value);
+    const month = Number($("finderMonth").value);
+    const options = {
+      ekadashi: $("findEkadashi").checked,
+      purnima: $("findPurnima").checked,
+      amavasya: $("findAmavasya").checked
+    };
+
+    if (!Number.isFinite(year) || year < 1 || year > 9999) {
+      showError("tithiError", "Enter a valid English year between 1 and 9999.");
+      return;
+    }
+    if (!options.ekadashi && !options.purnima && !options.amavasya) {
+      showError("tithiError", "Select at least one tithi to find.");
+      return;
+    }
+
+    const button = $("findTithiBtn");
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = "Finding…";
+    await tick();
+
+    try {
+      const city = getSelectedCity();
+      const results = findTithiEvents(year, month, options, city);
+
+      state.tithiResults = results;
+      state.tithiMeta = { year, month, city };
+
+      renderTithiResults(results, month, year, city);
+    } catch (error) {
+      console.error(error);
+      showError("tithiError", error.message || String(error));
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+
+  function renderTithiResults(results, month, year, city) {
+    if (!results.length) {
+      $("tithiResults").innerHTML =
+        `<div class="empty">No matching dates were found in ${escapeHtml(MONTH_NAMES_EN[month])} ${year} for ${escapeHtml(city.name)}.</div>`;
+      $("tithiIcs").hidden = true;
+      return;
+    }
+
+    const rows = results.map(result => {
+      const badge = result.spansMultipleSunrises
+        ? `<span class="badge">2 sunrises</span>`
+        : "";
+
+      return `
+        <tr>
+          <td>
+            <span class="event-name">${escapeHtml(result.label)}</span>
+            ${badge}
+          </td>
+          <td>${escapeHtml(formatFullDate(result.observance, result.tz))}</td>
+          <td>${result.start ? escapeHtml(formatDateTime(result.start, result.tz)) : "—"}</td>
+          <td>${result.end ? escapeHtml(formatDateTime(result.end, result.tz)) : "—"}</td>
+        </tr>
+      `;
+    }).join("");
+
+    $("tithiResults").innerHTML = `
+      <div class="result-summary">
+        ${results.length} observance${results.length === 1 ? "" : "s"} in
+        ${escapeHtml(MONTH_NAMES_EN[month])} ${year} · ${escapeHtml(city.name)}
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Observance</th>
+              <th>Vrat date — tithi at sunrise</th>
+              <th>Tithi begins</th>
+              <th>Tithi ends</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <p class="note">
+        A date is listed once, on the first sunrise at which the tithi is running.
+        Where a tithi spans two sunrises, the first is shown; some traditions use the second.
+        Verify with a local panchang.
+      </p>
+    `;
+
+    $("tithiIcs").hidden = false;
+  }
+
+  /* ================= ICS export ================= */
+
+  function icsEscape(value) {
+    return String(value)
+      .replace(/\\/g, "\\\\")
+      .replace(/\n/g, "\\n")
+      .replace(/,/g, "\\,")
+      .replace(/;/g, "\\;");
+  }
+
+  function foldIcsLine(line) {
+    const encoder = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
+    let result = "";
+    let chunk = "";
+    let bytes = 0;
+
+    for (const character of line) {
+      const length = encoder ? encoder.encode(character).length : character.length;
+      if (bytes + length > 73 && chunk.length) {
+        result += chunk + "\r\n ";
+        chunk = "";
+        bytes = 0;
+      }
+      chunk += character;
+      bytes += length;
+    }
+
+    return result + chunk;
+  }
+
+  function utcStamp(date) {
+    return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  }
+
+  function buildIcs(events, calendarName) {
+    const lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Hindu Date Converter//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      `X-WR-CALNAME:${icsEscape(calendarName)}`
+    ];
+
+    events.forEach(event => {
+      const tz = event.tz || "UTC";
+      const parts = zonedParts(event.date, tz);
+      const nextDay = new Date(Date.UTC(parts.year, parts.month, parts.day + 1));
+
+      const startText = `${parts.year}${pad2(parts.month + 1)}${pad2(parts.day)}`;
+      const endText = `${nextDay.getUTCFullYear()}${pad2(nextDay.getUTCMonth() + 1)}${pad2(nextDay.getUTCDate())}`;
+
+      lines.push("BEGIN:VEVENT");
+      lines.push(`UID:${event.uid || `${Date.now()}@hindu-date-converter`}`);
+      lines.push(`DTSTAMP:${utcStamp(new Date())}`);
+      lines.push(`DTSTART;VALUE=DATE:${startText}`);
+      lines.push(`DTEND;VALUE=DATE:${endText}`);
+      lines.push(`SUMMARY:${icsEscape(event.summary)}`);
+      lines.push(`DESCRIPTION:${icsEscape(event.description || "")}`);
+      lines.push(`LOCATION:${icsEscape(event.location || "")}`);
+      lines.push("TRANSP:TRANSPARENT");
+      lines.push("END:VEVENT");
+    });
+
+    lines.push("END:VCALENDAR");
+    return lines.map(foldIcsLine).join("\r\n") + "\r\n";
+  }
+
+  function downloadIcs(filename, content) {
+    const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function slug(value) {
+    return String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  function downloadConvertIcs() {
+    if (!state.lastConvert) return;
+
+    const { input, candidate, city } = state.lastConvert;
+    const pakshaName = input.paksha === "shukla" ? "Shukla" : "Krishna";
+    const tithiName = tithiShortName(input.tithi, input.paksha);
+
+    const event = {
+      date: candidate.date,
+      tz: city.tz,
+      summary: `Vrat — ${MONTHS[input.month]} ${pakshaName} ${tithiName}`,
+      description:
+        `${CALENDAR_LABELS[input.calendar]} ${input.year} · ` +
+        `${input.monthSystem === "amanta" ? "Amanta" : "Purnimanta"} · ` +
+        `${MONTHS[input.month]} ${pakshaName} ${tithiName}\n` +
+        `Resolved date: ${formatFullDate(candidate.date, city.tz)}\n` +
+        `Tithi begins: ${candidate.span && candidate.span.start ? formatDateTime(candidate.span.start, city.tz) : "—"}\n` +
+        `Tithi ends: ${candidate.span && candidate.span.end ? formatDateTime(candidate.span.end, city.tz) : "—"}\n` +
+        `Location: ${city.name} (${city.tz})\n` +
+        "Astronomical approximation. Verify with a local panchang.",
+      location: `${city.name} (${city.tz})`,
+      uid: `hindu-date-${Date.now()}@hindu-date-converter`
+    };
+
+    downloadIcs(
+      `hindu-date-${input.year}-${slug(MONTHS[input.month])}.ics`,
+      buildIcs([event], "Hindu Date Converter")
+    );
+  }
+
+  function downloadFestivalIcs() {
+    if (!state.lastFestival) return;
+
+    const result = state.lastFestival;
+    const festival = result.festival;
+    const city = result.city;
+    const span = result.span;
+
+    const event = {
+      date: result.observance,
+      tz: city.tz,
+      summary: festival.name,
+      description:
+        `${festival.name} — ${result.year}\n` +
+        `Rule used: ${RULE_LABELS[festival.rule] || festival.rule}\n` +
+        `Tithi begins: ${span && span.start ? formatDateTime(span.start, city.tz) : "—"}\n` +
+        `Tithi ends: ${span && span.end ? formatDateTime(span.end, city.tz) : "—"}\n` +
+        `${festival.note || "Regional rules may vary."}\n` +
+        `Location: ${city.name} (${city.tz})\n` +
+        "Astronomical approximation. Verify with a local panchang.",
+      location: `${city.name} (${city.tz})`,
+      uid: `festival-${festival.id}-${result.year}@hindu-date-converter`
+    };
+
+    downloadIcs(
+      `festival-${festival.id}-${result.year}.ics`,
+      buildIcs([event], `Hindu Festival — ${festival.name}`)
+    );
+  }
+
+  function downloadTithiIcs() {
+    if (!state.tithiResults.length || !state.tithiMeta) return;
+
+    const { year, month, city } = state.tithiMeta;
+    const seed = Date.now();
+
+    const events = state.tithiResults.map((result, index) => ({
+      date: result.observance,
+      tz: result.tz,
+      summary: `Vrat — ${result.label}`,
+      description:
+        `${result.label}\n` +
+        `Vrat date used: ${formatFullDate(result.observance, result.tz)}\n` +
+        `Tithi begins: ${result.start ? formatDateTime(result.start, result.tz) : "—"}\n` +
+        `Tithi ends: ${result.end ? formatDateTime(result.end, result.tz) : "—"}\n` +
+        `${result.spansMultipleSunrises ? "Tithi spans more than one sunrise; the first has been used.\n" : ""}` +
+        `Location: ${result.city.name} (${result.city.tz})\n` +
+        "Astronomical approximation. Verify with a local panchang.",
+      location: `${result.city.name} (${result.city.tz})`,
+      uid: `tithi-${seed}-${index}@hindu-date-converter`
+    }));
+
+    downloadIcs(
+      `vrat-finder-${slug(city.name)}-${year}-${pad2(month + 1)}.ics`,
+      buildIcs(events, "Hindu Vrat Finder")
+    );
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

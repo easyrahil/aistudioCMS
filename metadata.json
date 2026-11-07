@@ -1,0 +1,6 @@
+{
+  "name": "ApexCMS - Full-Stack Production CMS & E-Commerce",
+  "description": "High-performance modular custom CMS with blog, toggleable shop, drag-and-drop page builder, automated SEO engine, AI assistant, themes, and tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
